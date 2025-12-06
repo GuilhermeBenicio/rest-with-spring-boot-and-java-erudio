@@ -1,24 +1,16 @@
 package br.com.erudio.data.dto;
 
-import java.io.Serial;
-import java.io.Serializable;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.util.Objects;
 
-public class PersonDTO implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class PersonDTO extends RepresentationModel<PersonDTO> {
 
     private Long id;
     private String firstName;
     private String lastName;
     private String address;
     private String gender;
-
-    public PersonDTO() {
-
-    }
-
 
     public Long getId() {
         return id;
@@ -62,8 +54,13 @@ public class PersonDTO implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof PersonDTO person)) return false;
-        return Objects.equals(getId(), person.getId()) && Objects.equals(getFirstName(), person.getFirstName()) && Objects.equals(getLastName(), person.getLastName()) && Objects.equals(getAddress(), person.getAddress()) && Objects.equals(getGender(), person.getGender());
+        if (o == null || getClass() != o.getClass())
+            return false;
+        PersonDTO personDTO = (PersonDTO) o;
+        return Objects.equals(getId(), personDTO.getId()) && Objects.equals(getFirstName(), personDTO.getFirstName())
+                && Objects.equals(getLastName(), personDTO.getLastName())
+                && Objects.equals(getAddress(), personDTO.getAddress())
+                && Objects.equals(getGender(), personDTO.getGender());
     }
 
     @Override

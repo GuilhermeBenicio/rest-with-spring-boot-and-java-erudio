@@ -1,26 +1,33 @@
-package br.com.erudio.data.dto.v2;
+package br.com.erudio.model;
+
+import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Objects;
 
-public class PersonDTOV2 implements Serializable {
+@Entity
+@Table(name = "person")
+public class Person implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "first_name", nullable = false, length = 80)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false, length = 80)
     private String lastName;
+
+    @Column(nullable = false, length = 100)
     private String address;
+
+    @Column(nullable = false, length = 6)
     private String gender;
-    private Date birthDay;
-
-    public PersonDTOV2() {
-
-    }
-
 
     public Long getId() {
         return id;
@@ -62,27 +69,17 @@ public class PersonDTOV2 implements Serializable {
         this.gender = gender;
     }
 
-    public Date getBirthDay() {
-        return birthDay;
-    }
-
-    public void setBirthDay(Date birthDay) {
-        this.birthDay = birthDay;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        PersonDTOV2 that = (PersonDTOV2) o;
-        return Objects.equals(getId(), that.getId()) && Objects.equals(getFirstName(), that.getFirstName()) && Objects.equals(getLastName(), that.getLastName()) && Objects.equals(getAddress(), that.getAddress()) && Objects.equals(getGender(), that.getGender()) && Objects.equals(getBirthDay(), that.getBirthDay());
+        if (!(o instanceof Person person))
+            return false;
+        return Objects.equals(getId(), person.getId()) && Objects.equals(getFirstName(), person.getFirstName())
+                && Objects.equals(getLastName(), person.getLastName())
+                && Objects.equals(getAddress(), person.getAddress()) && Objects.equals(getGender(), person.getGender());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getFirstName(), getLastName(), getAddress(), getGender(), getBirthDay());
+        return Objects.hash(getId(), getFirstName(), getLastName(), getAddress(), getGender());
     }
-
 }
-
-
-

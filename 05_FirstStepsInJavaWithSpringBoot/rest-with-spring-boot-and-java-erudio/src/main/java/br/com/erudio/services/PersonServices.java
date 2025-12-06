@@ -1,66 +1,85 @@
-package br.com.erudio;
+package br.com.erudio.services;
 
+import br.com.erudio.data.dto.v1.PersonDTO;
+import br.com.erudio.data.dto.v2.PersonDTOV2;
+import br.com.erudio.exception.ResourceNotFoundException;
+import static br.com.erudio.mapper.ObjectMapper.parseListObjects;
+import static br.com.erudio.mapper.ObjectMapper.parseObject;
+
+import br.com.erudio.mapper.custom.PersonMapper;
 import br.com.erudio.model.Person;
+import br.com.erudio.repository.PersonRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 
 @Service
 public class PersonServices {
 
     private final AtomicLong counter = new AtomicLong();
-    private Logger logger = Logger.getLogger(PersonServices.class.getName());
+    private Logger logger = LoggerFactory.getLogger(PersonServices.class.getName());
 
-    public List<Person> findAll() {
-        logger.info("Finding all People!");
-        List<Person> persons = new ArrayList<Person>();
-        for (int i = 1; i < 8; i++) {
-            Person person = mockPerson(i);
-            persons.add(person);
-        }
-        return persons;
+
+   private final PersonRepository repository;
+   private final PersonMapper converter;
+
+    public PersonServices(PersonRepository repository, PersonMapper converter) {
+        this.repository = repository;
+        this.converter = converter;
     }
 
-    public Person findById(String id) {
+    public List<PersonDTO> findAll() {
+        logger.info("Finding all People!");
+        return parseListObjects(repository.findAll(), PersonDTO.class);
+    }
+
+    public PersonDTO findById(Long id) {
         logger.info("Finding one Person!");
 
-        Person person = new Person();
-        person.setId(counter.incrementAndGet());
-        person.setFirstName("Benicio");
-        person.setLastName("Silva");
-        person.setAddress("São Paulo - SP - Brasil");
-        person.setGender("Male");
+        var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Não encontramos nenhum registro com esse ID"));
 
-        return person;
+        return parseObject(entity, PersonDTO.class);
     }
 
-    public Person create(Person person) {
+    public PersonDTO create(PersonDTO person) {
         logger.info("Creating one Person!");
+        var entity = parseObject(person, Person.class);
 
-        return person;
+         return parseObject(repository.save(entity), PersonDTO.class);
     }
 
-    public Person update(Person person) {
+    public PersonDTOV2 createV2(PersonDTOV2 person) {
+        logger.info("Creating one Person V2!");
+        var entity =  converter.convertDTOtoEntity(person);
+
+        return converter.convertEntityToDTO(repository.save(entity));
+    }
+
+    public PersonDTO update(PersonDTO person) {
         logger.info("Updating one Person!");
 
-        return person;
+        Person entity = repository.findById(person.getId()).orElseThrow(() -> new ResourceNotFoundException("Não encontramos nenhum registro com esse ID"));
+        entity.setFirstName(person.getFirstName());
+        entity.setLastName(person.getLastName());
+        entity.setAddress(person.getAddress());
+        entity.setGender(person.getGender());
+
+        return parseObject(repository.save(entity), PersonDTO.class);
     }
 
-    public void delete(String id) {
+    public ResponseEntity<String> delete(Long id) {
         logger.info("Deleting one Person!");
-    }
 
-    private Person mockPerson(int i) {
-        Person person = new Person();
-        person.setId(counter.incrementAndGet());
-        person.setFirstName("Firstname " + i);
-        person.setLastName("Lastname " + i);
-        person.setAddress("Some Address in Brasil");
-        person.setGender("Male");
+        Person entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Não encontramos nenhum registro com esse ID"));
 
-        return person;
+        repository.delete(entity);
+
+        return new ResponseEntity<String>("Usuário deletado com sucesso", HttpStatus.OK);
     }
 }

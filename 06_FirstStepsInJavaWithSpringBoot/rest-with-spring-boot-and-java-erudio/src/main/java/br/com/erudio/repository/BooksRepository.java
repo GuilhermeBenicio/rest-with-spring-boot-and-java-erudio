@@ -1,4 +1,7 @@
 package br.com.erudio.repository;
 
-public interface BooksRepository {
+import br.com.erudio.model.Books;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface BooksRepository extends JpaRepository<Books, Long> {
 }
